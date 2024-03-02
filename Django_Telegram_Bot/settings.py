@@ -156,4 +156,4 @@ CELERY_TIMEZONE = TIME_ZONE
 # CELERY_ALWAYS_EAGER = False
 
 
-# CSRF_TRUSTED_ORIGINS = ['https://django-bot.darkube.app']
+CSRF_TRUSTED_ORIGINS = ['https://django-bot.darkube.app']
