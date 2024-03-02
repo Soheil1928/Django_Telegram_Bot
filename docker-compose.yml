@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+
+  django:
+    container_name: django
+    build:
+      context: .
+    volumes:
+      - .:/app/
+    command: sh -c "gunicorn Django_Telegram_Bot.wsgi:application --bind "0.0.0.0:8000""
+    ports:
+      - '8000:8000'
+    environment:
+      - ALLOWED_HOSTS=localhost,127.0.0.1
+      - DEBUG=False
+      - SECRET_KEY=nvanahaeuhfnfijvmdxpovmppepng
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - DB_NAME=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db
+      - DB_PORT=5432
+      - TELEGRAM_TOKEN=6979125509:AAGeI-x4b87i1-CPvPTfqUZ3DYVs3Pe6pvA
+    restart: always
+    depends_on:
+      - db
+      - redis
+    networks:
+      - my_network
+
+
+  celery:
+    container_name: celery
+    build:
+      context: .
+    volumes:
+      - .:/app
+    command: sh -c "celery -A Django_Telegram_Bot worker -l info"
+    environment:
+      - ALLOWED_HOSTS=localhost,127.0.0.1
+      - DEBUG=False
+      - SECRET_KEY=nvanahaeuhfnfijvmdxpovmppepng
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - DB_NAME=postgres
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db
+      - DB_PORT=5432
+      - TELEGRAM_TOKEN=6979125509:AAGeI-x4b87i1-CPvPTfqUZ3DYVs3Pe6pvA
+    restart: always
+    depends_on:
+      - django
+      - redis
+    networks:
+      - my_network
+
+
+  redis:
+    image: redis:7.0.11-alpine
+    expose:
+      - 6379
+    networks:
+      - my_network
+
+
+  db:
+    container_name: postgres
+    image: postgres:15-alpine
+    volumes:
+      - ./Django_Telegram_Bot/postgre/data:/var/lib/postgresql/data
+    expose:
+      - 5432
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - my_network
+
+
+networks:
+  my_network:
